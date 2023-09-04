@@ -34,7 +34,7 @@ const props = {
 let matches = books
 let page = 1;
 
-if (!books && !Array.isArray(books)) throw new Error('Source required')
+if (!books && !Array.isArray(books)) throw new Error('Source required') //check if books array exists
 
 const day = {
     dark: '10, 10, 20',
@@ -50,7 +50,7 @@ const fragment = document.createDocumentFragment()
 const extracted = books.slice(0, BOOKS_PER_PAGE)
 
 /**
- * The following takes a book object and converts it into an element object that can be appended into a parent node.
+ * Takes a book object and converts it into an element object that can be appended into a parent node.
  * @param {object} book 
  * @returns {node}
  */
@@ -91,6 +91,7 @@ for (let book of extracted) {
 
 props.showmore.listItems.appendChild(fragment)
 
+//populating form genres select input with options
 const genresFrag = document.createDocumentFragment()
 const  genOpt = document.createElement('option')
 genOpt.value = 'any'
@@ -106,6 +107,7 @@ for (const [id, text] of Object.entries(genres)) {
 
 props.search.genres.appendChild(genresFrag)
 
+//populating search form authors select input with options
 const authorsFrag = document.createDocumentFragment()
 const authorOpt = document.createElement('option')
 authorOpt.value = 'any'
@@ -121,12 +123,14 @@ for (const [id, text] of Object.entries(authors)) {
 
 props.search.authors.appendChild(authorsFrag)
 
+//setting theme form to current system setting
 props.settings.theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
 const theme = window.matchMedia('(prefers-color-scheme: dark)').matches? night : day
 
 document.documentElement.style.setProperty('--color-dark', theme.dark);
 document.documentElement.style.setProperty('--color-light', theme.light);
 
+//show more buttton text display
 props.showmore.showmoreBtn.innerText = `Show more ${books.length - BOOKS_PER_PAGE}`
 props.showmore.showmoreBtn.disabled = !(matches.length - (page * BOOKS_PER_PAGE) > 0)
 props.showmore.showmoreBtn.innerHTML = /* html */ `
@@ -134,11 +138,19 @@ props.showmore.showmoreBtn.innerHTML = /* html */ `
     <span class="list__remaining"> (${matches.length - (page * BOOKS_PER_PAGE) > 0 ? matches.length - (page * BOOKS_PER_PAGE) : 0})</span>
 `
 
+//handling overlays open and functionality
 props.search.cancel.onclick = () => { document.querySelector('[data-search-overlay]').open = false }
 props.settings.cancel.onclick = () => { document.querySelector('[data-settings-overlay]').open = false }
 props.settings.settingsBtn.onclick = () => { document.querySelector('[data-settings-overlay]').open = true }
 props.showmore.listClose.onclick = () => { document.querySelector('[data-list-active]').open = false }
 
+/**
+ * Append next 36 books to the book list for display
+ * @param {object} allBooks books array
+ * @param {number} displayed number of book already displayed  
+ * @param {number} nextDisplay number of books that will be displayed after show more button is click
+ * @returns {node} a docFragment containing all last page/pages books + new page books
+ */
 function createPreviewsFragment(allBooks,displayed,nextDisplay){
     const toAppend = allBooks.slice(displayed,nextDisplay)
     const newFrag = document.createDocumentFragment()
@@ -151,6 +163,9 @@ function createPreviewsFragment(allBooks,displayed,nextDisplay){
     return newFrag
 }
 
+/**
+ * updates show more button display text
+ */
 function updateRemaining() {
     document.querySelector('[data-list-button]').innerHTML = /* html */ `
     <span>Show more</span>
@@ -158,6 +173,7 @@ function updateRemaining() {
 `
 }
 
+//handling show more button click
 props.showmore.showmoreBtn.onclick = () => {
     props.showmore.listItems.appendChild(createPreviewsFragment(matches, page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE))
     page = page + 1
@@ -165,11 +181,13 @@ props.showmore.showmoreBtn.onclick = () => {
     props.showmore.showmoreBtn.disabled = matches.length - (page * BOOKS_PER_PAGE) <= 0
 }
 
+//handling header search button click
 props.search.searchBtn.onclick = () => {
     props.search.overlay.open = true
     props.search.title.focus();
 }
 
+// handling search form submit button 
 props.search.searchSubmit.onclick = (event) => {
     event.preventDefault()
     const formData = new FormData(props.search.form)
@@ -177,6 +195,7 @@ props.search.searchSubmit.onclick = (event) => {
 
     const result = []
 
+    // pushing every book that match our filsters to the result array
     for (const book of books) {
 
         filters.title.trim()
@@ -192,17 +211,19 @@ props.search.searchSubmit.onclick = (event) => {
         if (titleMatch && authorMatch && genreMatch) {result.push(book)}
     }
 
+    //meassage to display if there's no book matching the set filters
     if (result.length < 1){
         props.showmore.listMsg.classList.add('list__message_show')
     }else {
         props.showmore.listMsg.classList.remove('list__message_show')
     }
-
+    
+    // sectioning our found books into pages of 36 items
     props.showmore.listItems.innerHTML = ''
     const docfragment = document.createDocumentFragment()
     const extractedbooks = result.slice(0,BOOKS_PER_PAGE)
 
-
+    // creating nodes for found books to append in the book list div
     for (const { author, image, title, id } of extractedbooks) {
 
         const element = document.createElement('div')
@@ -229,6 +250,7 @@ props.search.searchSubmit.onclick = (event) => {
     matches = result
     page = 1
 
+    // updating showmore button display text to show how many books hidden and displayed
     const initial = result.length - (page * BOOKS_PER_PAGE)
     const hasRemaining = result.length > BOOKS_PER_PAGE 
     const remaining = hasRemaining? initial : 0
@@ -243,6 +265,7 @@ props.search.searchSubmit.onclick = (event) => {
     props.search.overlay.open = false
 }
 
+//handling theme setting save button
 props.settings.save.onclick = (event) => {
     event.preventDefault()
     const formData = new FormData(props.settings.form)
@@ -254,6 +277,7 @@ props.settings.save.onclick = (event) => {
     props.settings.overlay.open = false
 }
 
+// handling book click to show book description and publish year
 props.showmore.listItems.onclick = (event) => {
     const pathArray = Array.from(event.path || event.composedPath())
     let active;
