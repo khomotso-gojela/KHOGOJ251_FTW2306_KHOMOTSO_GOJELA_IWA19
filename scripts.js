@@ -1,5 +1,36 @@
 import { BOOKS_PER_PAGE, authors, books, genres } from "./data.js";
 
+const props = {
+    search: { 
+        searchBtn: document.querySelector('[data-header-search]'),
+        overlay: document.querySelector('[data-search-overlay]'),
+        cancel: document.querySelector('[data-search-cancel]'),
+        searchSubmit: document.querySelector('[data-search-overlay] .overlay__row button:nth-child(2)'),
+        genres: document.querySelector('[data-search-genres]'),
+        authors: document.querySelector('[data-search-authors]'),
+
+        form: document.querySelector('[data-search-form]'),
+        title: document.querySelector('[data-search-title]')
+    },
+
+    settings: {
+        settingsBtn: document.querySelector('[data-header-settings]'),
+        overlay: document.querySelector('[data-settings-overlay]'),
+        cancel: document.querySelector('[data-settings-cancel]'),
+        save: document.querySelector('[data-settings-overlay] .overlay__button_primary'),
+        theme: document.querySelector('[data-settings-theme]'),
+
+        form: document.querySelector('[data-settings-form]')
+    },
+
+    showmore: {
+        showmoreBtn: document.querySelector('[data-list-button]'),
+        listItems: document.querySelector('[data-list-items]'),
+        listClose: document.querySelector('[data-list-close]'),
+        listMsg: document.querySelector('[data-list-message]')
+    }
+}
+
 let matches = books
 let page = 1;
 
@@ -58,7 +89,7 @@ for (let book of extracted) {
     fragment.appendChild(preview)
 }
 
-document.querySelector('[data-list-items]').appendChild(fragment)
+props.showmore.listItems.appendChild(fragment)
 
 const genresFrag = document.createDocumentFragment()
 const  genOpt = document.createElement('option')
@@ -73,7 +104,7 @@ for (const [id, text] of Object.entries(genres)) {
     genresFrag.appendChild(element)
 }
 
-document.querySelector('[data-search-genres]').appendChild(genresFrag)
+props.search.genres.appendChild(genresFrag)
 
 const authorsFrag = document.createDocumentFragment()
 const authorOpt = document.createElement('option')
@@ -88,25 +119,25 @@ for (const [id, text] of Object.entries(authors)) {
     authorsFrag.appendChild(element)
 }
 
-document.querySelector('[data-search-authors]').appendChild(authorsFrag)
+props.search.authors.appendChild(authorsFrag)
 
-document.querySelector('[data-settings-theme]').value = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
+props.settings.theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day'
 const theme = window.matchMedia('(prefers-color-scheme: dark)').matches? night : day
 
 document.documentElement.style.setProperty('--color-dark', theme.dark);
 document.documentElement.style.setProperty('--color-light', theme.light);
 
-document.querySelector('[data-list-button]').innerText = `Show more ${books.length - BOOKS_PER_PAGE}`
-document.querySelector('[data-list-button]').disabled = !(matches.length - (page * BOOKS_PER_PAGE) > 0)
-document.querySelector('[data-list-button]').innerHTML = /* html */ `
+props.showmore.showmoreBtn.innerText = `Show more ${books.length - BOOKS_PER_PAGE}`
+props.showmore.showmoreBtn.disabled = !(matches.length - (page * BOOKS_PER_PAGE) > 0)
+props.showmore.showmoreBtn.innerHTML = /* html */ `
     <span>Show more</span>
     <span class="list__remaining"> (${matches.length - (page * BOOKS_PER_PAGE) > 0 ? matches.length - (page * BOOKS_PER_PAGE) : 0})</span>
 `
 
-document.querySelector('[data-search-cancel]').onclick = () => { document.querySelector('[data-search-overlay]').open = false }
-document.querySelector('[data-settings-cancel]').onclick = () => { document.querySelector('[data-settings-overlay]').open = false }
-document.querySelector('[data-header-settings]').onclick = () => { document.querySelector('[data-settings-overlay]').open = true }
-document.querySelector('[data-list-close]').onclick = () => { document.querySelector('[data-list-active]').open = false }
+props.search.cancel.onclick = () => { document.querySelector('[data-search-overlay]').open = false }
+props.settings.cancel.onclick = () => { document.querySelector('[data-settings-overlay]').open = false }
+props.settings.settingsBtn.onclick = () => { document.querySelector('[data-settings-overlay]').open = true }
+props.showmore.listClose.onclick = () => { document.querySelector('[data-list-active]').open = false }
 
 function createPreviewsFragment(allBooks,displayed,nextDisplay){
     const toAppend = allBooks.slice(displayed,nextDisplay)
@@ -127,21 +158,21 @@ function updateRemaining() {
 `
 }
 
-document.querySelector('[data-list-button]').onclick = () => {
-    document.querySelector('[data-list-items]').appendChild(createPreviewsFragment(matches, page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE))
+props.showmore.showmoreBtn.onclick = () => {
+    props.showmore.listItems.appendChild(createPreviewsFragment(matches, page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE))
     page = page + 1
     updateRemaining()
-    document.querySelector('[data-list-button]').disabled = matches.length - (page * BOOKS_PER_PAGE) <= 0
+    props.showmore.showmoreBtn.disabled = matches.length - (page * BOOKS_PER_PAGE) <= 0
 }
 
-document.querySelector('[data-header-search]').onclick = () => {
-    document.querySelector('[data-search-overlay]').open = true
-    document.querySelector('[data-search-title]').focus();
+props.search.searchBtn.onclick = () => {
+    props.search.overlay.open = true
+    props.search.title.focus();
 }
 
-document.querySelector('[data-search-overlay] .overlay__row button:nth-child(2)').onclick = (event) => {
+props.search.searchSubmit.onclick = (event) => {
     event.preventDefault()
-    const formData = new FormData(document.querySelector('[data-search-form]'))
+    const formData = new FormData(props.search.form)
     const filters  = Object.fromEntries(formData)
 
     const result = []
@@ -162,12 +193,12 @@ document.querySelector('[data-search-overlay] .overlay__row button:nth-child(2)'
     }
 
     if (result.length < 1){
-        document.querySelector('[data-list-message]').classList.add('list__message_show')
+        props.showmore.listMsg.classList.add('list__message_show')
     }else {
-        document.querySelector('[data-list-message]').classList.remove('list__message_show')
+        props.showmore.listMsg.classList.remove('list__message_show')
     }
 
-    document.querySelector('[data-list-items]').innerHTML = ''
+    props.showmore.listItems.innerHTML = ''
     const docfragment = document.createDocumentFragment()
     const extractedbooks = result.slice(0,BOOKS_PER_PAGE)
 
@@ -193,7 +224,7 @@ document.querySelector('[data-search-overlay] .overlay__row button:nth-child(2)'
         docfragment.appendChild(element)
     }
     
-    document.querySelector('[data-list-items]').appendChild(docfragment)
+    props.showmore.listItems.appendChild(docfragment)
 
     matches = result
     page = 1
@@ -201,7 +232,7 @@ document.querySelector('[data-search-overlay] .overlay__row button:nth-child(2)'
     const initial = result.length - (page * BOOKS_PER_PAGE)
     const hasRemaining = result.length > BOOKS_PER_PAGE 
     const remaining = hasRemaining? initial : 0
-    document.querySelector('[data-list-button]').disabled = initial <= 0
+    props.showmore.showmoreBtn.disabled = initial <= 0
 
     document.querySelector('[data-list-button]').innerHTML = /* html */ `
         <span>Show more</span>
@@ -209,21 +240,21 @@ document.querySelector('[data-search-overlay] .overlay__row button:nth-child(2)'
     `
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.querySelector('[data-search-overlay]').open = false
+    props.search.overlay.open = false
 }
 
-document.querySelector('[data-settings-overlay] .overlay__button_primary').onclick = (event) => {
+props.settings.save.onclick = (event) => {
     event.preventDefault()
-    const formData = new FormData(document.querySelector('[data-settings-form]'))
+    const formData = new FormData(props.settings.form)
     const result = Object.fromEntries(formData)
     const theme = result.theme == 'day'? day : night
 
     document.documentElement.style.setProperty('--color-dark', theme.dark);
     document.documentElement.style.setProperty('--color-light', theme.light);
-    document.querySelector('[data-settings-overlay]').open = false
+    props.settings.overlay.open = false
 }
 
-document.querySelector('[data-list-items]').onclick = (event) => {
+props.showmore.listItems.onclick = (event) => {
     const pathArray = Array.from(event.path || event.composedPath())
     let active;
 
