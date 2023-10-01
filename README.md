@@ -4,7 +4,7 @@
 
 The aim of this repository is to debug and correct errors in the javascript code of the book connect project and make sure the app meet the following user stories.
 
-User Stories
+## User Stories
 - As a user, I want to view a list of book previews, by title and author, so that I can discover new books to read.
 - As a user, I want an image associated with all book previews so that I can recognize a book by the cover even if I forgot the name.
 - As a user, I want to have the option of reading a summary of the book so that I can decide whether I want to read it.
